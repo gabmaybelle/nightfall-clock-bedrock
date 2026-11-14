@@ -1,0 +1,15 @@
+{
+  "name": "nightfall-clock-bedrock",
+  "version": "0.1.0",
+  "description": "Nightfall Clock for Minecraft Bedrock: the day and time on your screen, a warning at dusk and a countdown to dark.",
+  "private": true,
+  "license": "MIT",
+  "scripts": {
+    "build": "node tools/build.js",
+    "typecheck": "tsc -p tsconfig.json --noEmit"
+  },
+  "devDependencies": {
+    "@minecraft/server": "2.10.0",
+    "typescript": "5.9.3"
+  }
+}

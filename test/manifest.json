@@ -1,0 +1,22 @@
+{
+  "format_version": 2,
+  "header": {
+    "name": "Nightfall Clock self-test",
+    "description": "Test-only pack for a throwaway test world: runs the checklist on /scriptevent nightfall_clock:test. Never for a real world.",
+    "uuid": "0c3057ff-a383-4f12-a38c-d312523e46a0",
+    "version": [0, 1, 0],
+    "min_engine_version": [1, 26, 0]
+  },
+  "modules": [
+    {
+      "type": "script",
+      "language": "javascript",
+      "uuid": "f30f7539-b971-475a-b91f-a8c08112a918",
+      "version": [0, 1, 0],
+      "entry": "scripts/test/main.js"
+    }
+  ],
+  "dependencies": [
+    { "module_name": "@minecraft/server", "version": "2.10.0" }
+  ]
+}

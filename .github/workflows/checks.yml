@@ -1,0 +1,65 @@
+# Checks Nightfall Clock for Bedrock on every push and pull request, from a clean copy:
+# - the build (both packs and the HUD line), attached to the run as the .mcaddon
+# - the scripts against the script API typings (npm run typecheck)
+# - the self-test on Bedrock Dedicated Server (tools/bds-check.js): the clock's rules and live reading,
+#   dusk, storms and the Nether on a flat world, every case passing with no error or warning lines.
+#   Running it downloads the server from minecraft.net, which accepts Mojang's EULA for it.
+
+name: checks
+on:
+  push:
+    paths-ignore:
+      - '**.md'
+      - 'LICENSE'
+  pull_request:
+
+# A newer push to the same branch stops the run it replaces.
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+permissions:
+  contents: read
+
+env:
+  # The server version the self-test runs on; the same as the local test server.
+  BDS_VERSION: 1.26.63.1
+
+jobs:
+  checks:
+    runs-on: ubuntu-24.04
+    # A pull request from a branch in this repo is already checked by its push; only check forks' twice.
+    if: github.event_name == 'push' || github.event.pull_request.head.repo.full_name != github.repository
+    steps:
+      - name: checkout repository
+        uses: actions/checkout@v6
+      - name: setup node
+        uses: actions/setup-node@v5
+        with:
+          node-version: '22'
+          cache: npm
+      - name: install
+        run: npm ci
+      - name: build
+        run: npm run build
+      - name: typecheck
+        run: npm run typecheck
+      - name: cache the Bedrock server
+        id: bds-cache
+        uses: actions/cache@v4
+        with:
+          path: bds.zip
+          key: bds-linux-${{ env.BDS_VERSION }}
+      - name: download the Bedrock server
+        if: steps.bds-cache.outputs.cache-hit != 'true'
+        run: |
+          url="https://www.minecraft.net/bedrockdedicatedserver/bin-linux/bedrock-server-${BDS_VERSION}.zip"
+          curl -fsSL -A "Mozilla/5.0" -o bds.zip "$url"
+      - name: self-test on a flat world
+        run: node tools/bds-check.js server --zip bds.zip --seconds 300
+      - name: upload the add-on
+        uses: actions/upload-artifact@v7
+        with:
+          name: NightfallClock-mcaddon
+          path: dist/*.mcaddon
+          if-no-files-found: error

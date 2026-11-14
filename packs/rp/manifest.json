@@ -1,0 +1,22 @@
+{
+  "format_version": 2,
+  "header": {
+    "name": "Nightfall Clock",
+    "description": "The day and time on your screen, a warning at dusk and a countdown to dark. Resource pack.",
+    "uuid": "c293f064-8d19-43d7-8046-792a57f324de",
+    "version": [0, 1, 0],
+    "min_engine_version": [1, 26, 0]
+  },
+  "modules": [
+    {
+      "type": "resources",
+      "uuid": "11da8caa-ad59-43ad-9b41-76c55a44f05e",
+      "version": [0, 1, 0]
+    }
+  ],
+  "metadata": {
+    "authors": ["Gabby"],
+    "license": "MIT",
+    "url": "https://github.com/gabmaybelle/nightfall-clock-bedrock"
+  }
+}

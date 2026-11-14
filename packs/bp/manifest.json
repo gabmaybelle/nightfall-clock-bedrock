@@ -1,0 +1,28 @@
+{
+  "format_version": 2,
+  "header": {
+    "name": "Nightfall Clock",
+    "description": "The day and time on your screen, a warning at dusk and a countdown to dark. Behaviour pack.",
+    "uuid": "001ffe91-7008-4c61-b112-5cd3ca73a259",
+    "version": [0, 1, 0],
+    "min_engine_version": [1, 26, 0]
+  },
+  "modules": [
+    {
+      "type": "script",
+      "language": "javascript",
+      "uuid": "fa2bdb03-c532-4254-8e6e-c84108a52c61",
+      "version": [0, 1, 0],
+      "entry": "scripts/src/main.js"
+    }
+  ],
+  "dependencies": [
+    { "module_name": "@minecraft/server", "version": "2.10.0" },
+    { "uuid": "c293f064-8d19-43d7-8046-792a57f324de", "version": [0, 1, 0] }
+  ],
+  "metadata": {
+    "authors": ["Gabby"],
+    "license": "MIT",
+    "url": "https://github.com/gabmaybelle/nightfall-clock-bedrock"
+  }
+}
