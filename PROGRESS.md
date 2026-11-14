@@ -12,10 +12,16 @@
 - Measured on Bedrock: sky light falls to 7 (monsters can spawn) between ticks 13000 and 13250, so
   the Java edition's dark tick (about 13178) holds. The day number changes at 6:00 AM, as on Java.
 
+- **Session 2 (2026-11-14):** the settings form, `/nightfall_clock:settings` (any player, no cheats):
+  clock, dusk warning, countdown, storm warning, Overworld time in the Nether and the End, position
+  (above the hotbar or a corner) and 12- or 24-hour, saved on each player. The self-test passes 8 of 8
+  (settings defaults and cleaning, and the live line for other settings) with no warnings.
+
 ## Next
 
-- Session 2: the settings form (`/nightfall_clock:settings`: clock, dusk warning, countdown, storm
-  warning, Overworld time, position, 12- or 24-hour), saved per player.
+- Open the settings form in the game and look at it (the form and the command can't be opened
+  headless): each choice should change the line at once, and the position should move it.
+- Then the release: `.mcaddon`, listing, GitHub release, CurseForge.
 - Seen on Gabby's phone (2026-11-14), all as expected: the line above the hotbar (on phones -30, just clear of the item-name line, and -46 on PC, where the hearts sit above the hotbar: Gabby, 2026-11-14), dusk, the storm,
   the Nether line, and Pocket List's corner list updating beside the clock. Bedrock's font has no
   middle dot: "·" draws as a small dash with a wide gap before it ("Day 2  - 11:57 AM").

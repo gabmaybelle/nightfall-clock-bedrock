@@ -3,8 +3,9 @@
 // "Storm's rolling in" when thunder starts, and the Overworld's time in the Nether and the End.
 // The rules are in clock.ts, the drawing in hud.ts. Nothing runs every tick: one pass every 10.
 import { system, world, WeatherType } from "@minecraft/server";
-import { AQUA, DUSK, DuskWatch, GOLD, STORM, WHITE, gold, line, minuteOfDay, secondsToDark } from "./clock.js";
+import { AQUA, DUSK, DuskWatch, GOLD, STORM, Settings, WHITE, cleanSettings, defaults, gold, line, minuteOfDay, secondsToDark } from "./clock.js";
 import { Place, draw } from "./hud.js";
+import { settingsOf } from "./settings.js";
 
 export const VERSION = "0.1.0";
 const PASS_TICKS = 10;
@@ -13,7 +14,7 @@ const THUNDER_KEY = "nightfall_clock:thunder";
 
 const dusk = new DuskWatch();
 // The dusk or storm message showing now (the newest wins), and until which tick.
-let message = "", messageUntil = -1, duskCount = 0, stormCount = 0;
+let message = "", messageKind: "dusk" | "storm" = "dusk", messageUntil = -1, duskCount = 0, stormCount = 0;
 
 // Bedrock's stable API has no "is it thundering" reading, only the change event: remember the last
 // one in the world, so a reload still knows.
@@ -23,6 +24,7 @@ world.afterEvents.weatherChange.subscribe((ev) => {
   const now = ev.newWeather === WeatherType.Thunder;
   if (now && ev.previousWeather !== WeatherType.Thunder) {
     message = AQUA + STORM;
+    messageKind = "storm";
     messageUntil = system.currentTick + STORM_TICKS;
     stormCount++;
   }
@@ -30,26 +32,30 @@ world.afterEvents.weatherChange.subscribe((ev) => {
 });
 
 /** What the clock shows a player in this dimension just now, colour code first. */
-export function reading(dimensionId: string) {
+export function reading(dimensionId: string, s: Settings = defaults()) {
   const elsewhere = dimensionId !== "minecraft:overworld";
   const t = world.getTimeOfDay(), minute = minuteOfDay(t), day = world.getDay() + 1;
   const seconds = elsewhere ? -1 : secondsToDark(t, thundering());
-  const text = line(day, minute, true, seconds, elsewhere);
+  const text = line(day, minute, s.twelveHour, s.countdown ? seconds : -1, elsewhere);
   const isGold = !elsewhere && gold(minute, seconds);
   let shown = (isGold ? GOLD : WHITE) + text;
-  if (!elsewhere && system.currentTick < messageUntil) shown = message;
+  if (!elsewhere && system.currentTick < messageUntil && (messageKind === "dusk" ? s.dusk : s.storm)) shown = message;
+  // Off: the clock, or the Overworld time in other dimensions, draws nothing.
+  if (!s.clock || (elsewhere && !s.elsewhere)) shown = "";
   return { timeOfDay: t, day, minute, seconds, text, gold: isGold, shown, thunder: thundering() };
 }
 
 function pass() {
   if (dusk.update(minuteOfDay(world.getTimeOfDay()))) {
     message = GOLD + DUSK;
+    messageKind = "dusk";
     messageUntil = system.currentTick + DUSK_TICKS;
     duskCount++;
   }
   for (const player of world.getAllPlayers()) {
     try {
-      draw(player, "hb" as Place, reading(player.dimension.id).shown);
+      const s = settingsOf(player);
+      draw(player, s.place as Place, reading(player.dimension.id, s).shown);
     } catch (e) {
       console.warn(`[Nightfall Clock] couldn't draw for ${player.name}: ${e}`);
     }
@@ -62,7 +68,20 @@ system.runInterval(pass, PASS_TICKS);
 system.afterEvents.scriptEventReceive.subscribe((ev) => {
   if (ev.id !== "nightfall_clock:debug") return;
   pass();
-  const reply = { over: reading("minecraft:overworld"), nether: reading("minecraft:nether"), duskCount, stormCount };
+  // A test can send settings (JSON) to see the line for them too.
+  let custom = defaults();
+  try {
+    custom = cleanSettings(JSON.parse(ev.message));
+  } catch (e) {
+    // Not settings: the defaults.
+  }
+  const reply = {
+    over: reading("minecraft:overworld"),
+    nether: reading("minecraft:nether"),
+    custom: { over: reading("minecraft:overworld", custom), nether: reading("minecraft:nether", custom) },
+    duskCount,
+    stormCount,
+  };
   system.sendScriptEvent("nightfall_clock:debug_reply", JSON.stringify(reply));
 });
 

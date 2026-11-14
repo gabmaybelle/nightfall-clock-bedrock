@@ -18,6 +18,7 @@
   ],
   "dependencies": [
     { "module_name": "@minecraft/server", "version": "2.10.0" },
+    { "module_name": "@minecraft/server-ui", "version": "2.2.0" },
     { "uuid": "c293f064-8d19-43d7-8046-792a57f324de", "version": [0, 1, 0] }
   ],
   "metadata": {

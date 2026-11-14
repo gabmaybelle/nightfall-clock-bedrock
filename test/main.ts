@@ -7,7 +7,7 @@
 // The rules are checked directly (clock.ts is copied into this pack); the pack's live reading is
 // asked through its nightfall_clock:debug hook, since one pack can't call another.
 import { world, system } from "@minecraft/server";
-import { DARK_TICK, DUSK, DuskWatch, STORM, darkIn, gold, line, minuteOfDay, secondsToDark, time } from "../src/clock.js";
+import { DARK_TICK, DUSK, cleanSettings, DuskWatch, STORM, darkIn, gold, line, minuteOfDay, secondsToDark, time } from "../src/clock.js";
 
 const log = (s: string) => console.warn("NC TEST: " + s);
 const wait = (ticks: number) => new Promise<void>((resolve) => system.runTimeout(() => resolve(), ticks));
@@ -26,10 +26,10 @@ system.afterEvents.scriptEventReceive.subscribe((ev) => {
   pending = undefined;
   f?.(JSON.parse(ev.message));
 });
-function ask(): Promise<Json> {
+function ask(settings: Json = {}): Promise<Json> {
   return new Promise((resolve, reject) => {
     pending = resolve;
-    system.sendScriptEvent("nightfall_clock:debug", "{}");
+    system.sendScriptEvent("nightfall_clock:debug", JSON.stringify(settings));
     system.runTimeout(() => {
       if (pending === resolve) {
         pending = undefined;
@@ -68,6 +68,21 @@ const CASES: [string, () => Promise<void>][] = [
     const j = new DuskWatch();
     j.update(16 * 60);
     must(!j.update(19 * 60), "a jump isn't dusk");
+  }],
+  ["settings", async () => {
+    const d = cleanSettings(undefined);
+    must(d.clock && d.dusk && d.countdown && d.storm && d.elsewhere && d.twelveHour && d.place === "hb", "defaults");
+    const bad = cleanSettings({ clock: "no", place: "middle", twelveHour: false, storm: false });
+    must(bad.clock && bad.place === "hb" && !bad.twelveHour && !bad.storm, "wrong values take defaults, right ones stay");
+    eq(cleanSettings({ place: "br" }).place, "br", "a corner");
+    // The live line for other settings, at 6:30 PM.
+    await at(12500);
+    const r = await ask({ countdown: false, twelveHour: false });
+    must(/^Day \d+ · 18:30$/.test(r.custom.over.text), "24-hour, no countdown: " + r.custom.over.text);
+    must(r.custom.over.gold, "still gold without the countdown");
+    eq((await ask({ clock: false })).custom.over.shown, "", "clock off draws nothing");
+    eq((await ask({ elsewhere: false })).custom.nether.shown, "", "Nether off draws nothing");
+    must((await ask({ elsewhere: false })).custom.over.shown !== "", "Overworld still drawn");
   }],
   ["noon", async () => {
     const r = (await at(6000)).over;

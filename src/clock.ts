@@ -60,6 +60,31 @@ export function line(day: number, minute: number, twelveHour: boolean, seconds: 
   return elsewhere ? "Overworld: " + text : text;
 }
 
+/** One player's choices (the Java edition's settings screen), saved on the player. */
+export interface Settings {
+  clock: boolean;
+  dusk: boolean;
+  countdown: boolean;
+  storm: boolean;
+  elsewhere: boolean;
+  /** One of the places in hud.ts: "hb" above the hotbar, or a corner. */
+  place: string;
+  twelveHour: boolean;
+}
+export const PLACE_KEYS = ["hb", "tl", "tr", "bl", "br"];
+export const PLACE_NAMES = ["Above the hotbar", "Top left", "Top right", "Bottom left", "Bottom right"];
+export const defaults = (): Settings => ({ clock: true, dusk: true, countdown: true, storm: true, elsewhere: true, place: "hb", twelveHour: true });
+
+/** Settings from whatever was saved: a missing or wrong-typed value takes its default. */
+export function cleanSettings(raw: unknown): Settings {
+  const s = defaults();
+  if (typeof raw !== "object" || raw === null) return s;
+  const r = raw as Record<string, unknown>;
+  for (const k of ["clock", "dusk", "countdown", "storm", "elsewhere", "twelveHour"] as const) if (typeof r[k] === "boolean") s[k] = r[k];
+  if (typeof r.place === "string" && PLACE_KEYS.includes(r.place)) s.place = r.place;
+  return s;
+}
+
 /**
  * Decides the moment dusk arrives: the clock passing 6:00 PM as the day runs. A jump of more than
  * ten game minutes (a /time set, or everyone sleeping) isn't dusk arriving, and neither is the first
