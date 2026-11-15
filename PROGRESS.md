@@ -19,9 +19,8 @@
 
 ## Next
 
-- Open the settings form in the game and look at it (the form and the command can't be opened
-  headless): each choice should change the line at once, and the position should move it.
-- Then the release: `.mcaddon`, listing, GitHub release, CurseForge.
+- The release: GitHub release with the `.mcaddon`, then the CurseForge Bedrock project.
+- The settings form, checked on Gabby's phone (2026-11-14): every choice works.
 - Seen on Gabby's phone (2026-11-14), all as expected: the line above the hotbar (on phones -30, just clear of the item-name line, and -46 on PC, where the hearts sit above the hotbar: Gabby, 2026-11-14), dusk, the storm,
   the Nether line, and Pocket List's corner list updating beside the clock. Bedrock's font has no
   middle dot: "·" draws as a small dash with a wide gap before it ("Day 2  - 11:57 AM").
